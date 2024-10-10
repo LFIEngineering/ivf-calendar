@@ -1,0 +1,28 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+#calendar {
+    margin-top: 20px;
+}
+
+.calendar-entry {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #calendar, #calendar * {
+        visibility: visible;
+    }
+    #calendar {
+        position: absolute;
+        left: 0;
+        top: 0;
+    }
+}
