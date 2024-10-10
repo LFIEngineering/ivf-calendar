@@ -93,12 +93,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
         if (stimStartDate) {
             // Stim Start Date
-            dates.push({ date: stimStartDate, event: 'Stim Start' });
+            dates.push({ 
+                date: stimStartDate, 
+                event: 'Stim Start' 
+            });
     
             // Last Active Birth Control Pill - 5 days before stim start
             const lastActiveBCPDate = new Date(stimStartDate);
             lastActiveBCPDate.setUTCDate(stimStartDate.getUTCDate() - 5);
-            dates.push({ date: lastActiveBCPDate, event: 'Last Active Birth Control Pill' });
+            dates.push({ 
+                date: lastActiveBCPDate, 
+                event: 'Last Active Birth Control Pill' 
+            });
     
             // Anticipated Bleed - 0-2 days after the last active birth control pill
             const anticipatedBleedStartDate = new Date(lastActiveBCPDate);
@@ -116,21 +122,44 @@ document.addEventListener('DOMContentLoaded', function() {
             // Baseline Ultrasound and Labs - 2 days before stim start
             const baselineUltrasoundDate = new Date(stimStartDate);
             baselineUltrasoundDate.setUTCDate(stimStartDate.getUTCDate() - 2);
-            dates.push({ date: baselineUltrasoundDate, event: 'Baseline Ultrasound and Labs' });
+            dates.push({ 
+                date: baselineUltrasoundDate, 
+                event: 'Baseline Ultrasound and Labs' 
+            });
     
             // Possible Antagonist Start - 10 days after stim start
-            const possibleAntagonistStartDate = new Date(stimStartDate);
-            possibleAntagonistStartDate.setUTCDate(stimStartDate.getUTCDate() + 10);
-            dates.push({ date: possibleAntagonistStartDate, event: 'Possible Antagonist Start' });
+            const antagonistStartDate = new Date(stimStartDate);
+            const antagonistEndDate = new Date(stimStartDate);
+            antagonistStartDate.setUTCDate(stimStartDate.getUTCDate() + 3);
+            antagonistEndDate.setUTCDate(antagonistStartDate.getUTCDate() + 1);
+            dates.push({ 
+                date: antagonistStartDate,
+                event: 'Antagonist Start' 
+            });
+            dates.push({
+                date: antagonistEndDate,
+                event: 'Antagonist End Date'
+            });
     
             // Possible Egg Retrieval - 14 days after stim start
-            const possibleEggRetrievalDate = new Date(stimStartDate);
-            possibleEggRetrievalDate.setUTCDate(stimStartDate.getUTCDate() + 14);
-            dates.push({ date: possibleEggRetrievalDate, event: 'Possible Egg Retrieval' });
-    
-            // Day 11 Ultrasound (only add if `day11Ultrasound` was provided)
+            const eggRetrievalStartDate = new Date(stimStartDate);
+            const eggRetrievalEndDate = new Date(stimStartDate);
+            eggRetrievalStartDate.setUTCDate(stimStartDate.getUTCDate() + 12);
+            eggRetrievalEndDate.setUTCDate(eggRetrievalStartDate.getUTCDate() + 2);
+            dates.push({
+                date: eggRetrievalStartDate, 
+                event: 'Egg Retrieval Start Date' 
+            });
+            dates.push({
+                date: eggRetrievalEndDate,
+                event: 'Egg Retrieval End Date'
+            })
+
             if (day11Ultrasound) {
-                dates.push({ date: new Date(day11Ultrasound), event: 'Day 11 Ultrasound' });
+                dates.push({ 
+                    date: new Date(day11Ultrasound), 
+                    event: 'Day 11 Ultrasound' 
+                });
             }
         }
         return dates;
