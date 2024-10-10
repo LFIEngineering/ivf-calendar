@@ -42,41 +42,90 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("ivfForm works");
     }
 
-    const calendarElement = document.getElementById('calendar');
+    const calendarElement = document.getElementById('calendar-weeks');
 
-    if (calendarElement) {
-        const patientName = localStorage.getItem('patientName');
-        const stimStartDateValue = localStorage.getItem('stimStartDate');
-        const day11UltrasoundValue = localStorage.getItem('day11Ultrasound');
+    const patientName = localStorage.getItem('patientName');
+    const stimStartDateValue = localStorage.getItem('stimStartDate');
+    const day11UltrasoundValue = localStorage.getItem('day11Ultrasound');
 
-        console.log('Retrieved from localStorage:', {
-            patientName,
-            stimStartDateValue,
-            day11UltrasoundValue
+    if (patientName) {
+        const stimStartDate = stimStartDateValue ? new Date(stimStartDateValue) : null;
+        const day11Ultrasound = day11UltrasoundValue ? new Date(day11UltrasoundValue) : null;
+
+        const dates = calculateDates(stimStartDate, day11Ultrasound);
+
+        const eventsMap = {};
+        dates.forEach(date => {
+            const eventDateString = date.date.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+            if (!eventsMap[eventDateString]) {
+                eventsMap[eventDateString] = []; // Initialize if not present
+            }
+            eventsMap[eventDateString].push(date.event); // Add event to the corresponding date
         });
 
-        if (patientName) {
-            const stimStartDate = stimStartDateValue ? new Date(stimStartDateValue) : null;
-            const day11Ultrasound = day11UltrasoundValue ? new Date(day11UltrasoundValue) : null;
+        // Assuming you have the current month and year you want to display
+        const currentDate = new Date(); // You can change this to any month/year
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth(); // 0 = January, 1 = February, etc.
 
-            console.log('Parsed Dates:', {
-                stimStartDate: stimStartDate ? stimStartDate.toISOString() : null,
-                day11Ultrasound: day11Ultrasound ? day11Ultrasound.toISOString() : null
-            });
+        // Get the first day of the month
+        const firstDay = new Date(year, month, 1);
+        const lastDay = new Date(year, month + 1, 0); // Last day of the month
 
-            const dates = calculateDates(stimStartDate, day11Ultrasound);
+        // Create an array to hold the weeks
+        const weeks = [];
 
-            calendarElement.innerHTML = `<h2>IVF Calendar for ${patientName}</h2>`;
-            dates.forEach(date => {
-                const entry = document.createElement('div');
-                entry.className = 'calendar-entry';
-                entry.innerText = `${date.date.toISOString().split('T')[0]}: ${date.event}`;
-                calendarElement.appendChild(entry);
-            });
+        // Fill in the weeks
+        let week = [];
+        let dayCounter = 1;
 
-            console.log('Generated Dates:', dates.map(d => `${d.date.toISOString()}: ${d.event}`));
+        // Add empty days for the start of the month
+        for (let i = 0; i < firstDay.getDay(); i++) {
+            week.push('');
         }
+
+        // Fill in the days of the month
+        for (let i = 1; i <= lastDay.getDate(); i++) {
+            week.push(i);
+            if (week.length === 7) {
+                weeks.push(week);
+                week = []; // Reset for the next week
+            }
+        }
+
+        // Add empty days for the end of the month
+        while (week.length < 7) {
+            week.push('');
+        }
+        if (week.length) {
+            weeks.push(week);
+        }
+
+        // Populate the calendar
+        weeks.forEach((week) => {
+            const weekElement = document.createElement('div');
+            weekElement.className = 'week d-flex';
+
+            week.forEach((day) => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'date flex-fill text-center border p-3';
+                dayElement.textContent = day ? day : ''; // Only show numbers for days
+                
+                // Check if this day has any events
+                if (day) {
+                    const dateString = `${year}-${month + 1}-${day}`; // Create date string YYYY-MM-DD
+                    if (eventsMap[dateString]) {
+                        dayElement.innerHTML += `<br>${eventsMap[dateString].join(', ')}`; // Display events for that day
+                    }
+                }
+
+                weekElement.appendChild(dayElement);
+            });
+
+            calendarElement.appendChild(weekElement);
+        });
     }
+
 
     function calculateDates(stimStart, day11Ultrasound) {
         const dates = [];
@@ -164,7 +213,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return dates;
     }
-    
 
     const printButton = document.getElementById('print-button');
     

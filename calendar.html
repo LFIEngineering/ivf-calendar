@@ -1,21 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=devide-width, initial-scale=1.0">
-        <title>IVF Calendar</title>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-        <link rel="stylesheet" href="styles.css">
-        <script src="/script.js"></script>
-        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" defer></script>
-        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" defer></script>
-        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" defer></script>
-    </head>
-    <body>
-        <div class="container">
-            <div id="calendar"></div>
-            <textarea id="notes" class="form-control mt-3" rows="4" placeholder="Notes: "></textarea>
-            <button id="print-button" class="btn btn-secondary mt-3">Print Calendar</button>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IVF Calendar</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <script src="/script.js"></script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" defer></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mt-4">IVF Calendar</h2>
+        <div id="calendar" class="mt-4">
+            <div class="weekdays d-flex justify-content-between bg-light p-2">
+                <div class="day flex-fill text-center">Sun</div>
+                <div class="day flex-fill text-center">Mon</div>
+                <div class="day flex-fill text-center">Tue</div>
+                <div class="day flex-fill text-center">Wed</div>
+                <div class="day flex-fill text-center">Thu</div>
+                <div class="day flex-fill text-center">Fri</div>
+                <div class="day flex-fill text-center">Sat</div>
+            </div>
+            <div class="weeks" id="calendar-weeks">
+                <!-- The calendar dates will be dynamically inserted here -->
+            </div>
         </div>
-    </body>
+        <textarea id="notes" class="form-control mt-3" rows="4" placeholder="Notes: "></textarea>
+        <button id="print-button" class="btn btn-secondary mt-3">Print Calendar</button>
+    </div>
+</body>
 </html>

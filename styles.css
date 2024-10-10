@@ -13,6 +13,33 @@ body {
     background-color: #f9f9f9;
 }
 
+#calendar {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.weekdays {
+    font-weight: bold;
+    background-color: #f8f9fa; /* Light background for the header */
+}
+
+.week {
+    display: flex; /* Use flexbox for each week */
+}
+
+.date {
+    flex: 1; /* Each date box takes equal space */
+    min-height: 60px; /* Set a minimum height for the boxes */
+    box-sizing: border-box;
+    cursor: pointer; /* Change cursor to pointer on hover */
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+.date:hover {
+    background-color: #e6e6e6; /* Change background on hover */
+}
+
 @media print {
     body * {
         visibility: hidden;
