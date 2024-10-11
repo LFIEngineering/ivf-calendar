@@ -247,6 +247,23 @@ document.addEventListener('DOMContentLoaded', function() {
         return dates;
     }
 
+    const notesInput = document.getElementById('notes');
+    const savedNotes = localStorage.getItem('notes');
+    if (savedNotes) {
+        notesInput.value = savedNotes; // Set the textarea value to saved notes
+    }
+
+    // Save notes to localStorage when the Save button is clicked
+    const saveButton = document.getElementById('save-button');
+    
+    if (saveButton) {
+        saveButton.addEventListener('click', function() {
+            const notesValue = notesInput.value;
+            localStorage.setItem('notes', notesValue); // Save the notes in localStorage
+            alert('Notes saved!'); // Optional: Alert the user
+        });
+    }
+
     const printButton = document.getElementById('print-button');
     
     if (printButton) {

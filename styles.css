@@ -58,10 +58,29 @@ body {
     background-color: #e6e6e6; /* Change background on hover */
 }
 
+.buton-spacing {
+    margin-top: 5px;
+    margin-right: 10px;
+}
+
+#notes {
+    resize: none; /* Prevent resizing */
+    height: 100px; /* Set a fixed height */
+}
+
+#notes::placeholder {
+    color: #aaa; /* Set color for the placeholder text */
+    opacity: 1; /* Ensure the placeholder is visible */
+}
+
 @media print {
     /* Hide everything that is not needed for printing */
     #print-button {
         display: none; /* Hide the print button */
+    }
+
+    #save-button {
+        display: none;
     }
 
     /* Ensure that headers are printed */
