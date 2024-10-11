@@ -6,9 +6,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
     const firstFriday = getFirstDayOfWeek(new Date(today), 5); // First Friday
     const day11AfterFriday = new Date(firstFriday);
     day11AfterFriday.setUTCDate(firstFriday.getUTCDate() + 11); // Add 11 days to get to Monday
+
+    const monthYearDisplay = document.getElementById('month-year-display');
+    const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
 
     const stimStartDateInput = document.getElementById('stim-start-date');
     const day11UltrasoundInput = document.getElementById('day-11-ultrasound');
@@ -50,12 +56,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const day11UltrasoundValue = localStorage.getItem('day11Ultrasound');
 
     if (patientNameFromQuery) {
-        patientNameDisplay.textContent = `Patient Name: ${decodeURIComponent(patientNameFromQuery)}`;
+        patientNameDisplay.textContent = `${decodeURIComponent(patientNameFromQuery)}`;
         localStorage.setItem('patientName', decodeURIComponent(patientNameFromQuery));
     }
 
     if (patientName) {
-        patientNameDisplay.textContent = `Patient Name: ${patientName}`;
+        patientNameDisplay.textContent = `${patientName}`;
 
         const stimStartDate = stimStartDateValue ? new Date(stimStartDateValue) : null;
         const day11Ultrasound = day11UltrasoundValue ? new Date(day11UltrasoundValue) : null;
