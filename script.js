@@ -108,15 +108,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
             week.forEach((day) => {
                 const dayElement = document.createElement('div');
-                dayElement.className = 'date flex-fill text-center border p-3';
-                dayElement.textContent = day ? day : ''; // Only show numbers for days
+                dayElement.className = 'date flex-fill border p-3';
                 
-                // Check if this day has any events
                 if (day) {
+                    // Create a span for the date number
+                    const dateNumberElement = document.createElement('span');
+                    dateNumberElement.className = 'date-number';
+                    dateNumberElement.textContent = day;
+                    dayElement.appendChild(dateNumberElement);
+
+                    // Create a div for the events
+                    const dateEventsElement = document.createElement('div');
+                    dateEventsElement.className = 'date-events';
+                    
                     const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; // Create date string YYYY-MM-DD
                     if (eventsMap[dateString]) {
-                        dayElement.innerHTML += `<br>${eventsMap[dateString].join(', ')}`; // Display events for that day
+                        dateEventsElement.innerHTML = eventsMap[dateString].join('<br>'); // Display events for that day
                     }
+                    dayElement.appendChild(dateEventsElement);
                 }
 
                 weekElement.appendChild(dayElement);
@@ -167,20 +176,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 date: anticipatedBleedEndDate,
                 event: 'Anticipated Bleed End'
             });
-
-            // Baseline Ultrasound and Labs - 2 days before stim start
-            const baselineUltrasoundDate = new Date(stimStartDate);
-            baselineUltrasoundDate.setUTCDate(stimStartDate.getUTCDate() - 2);
+    
+            // Baseline Ultrasound and Labs - 3 days after the last active birth control pill
+            const baselineUltrasoundDate = new Date(lastActiveBCPDate);
+            baselineUltrasoundDate.setUTCDate(lastActiveBCPDate.getUTCDate() + 3);
             dates.push({
                 date: baselineUltrasoundDate,
                 event: 'Baseline Ultrasound and Labs'
             });
     
-            // Possible Antagonist Start - 3 days after stim start
+            // Antagonist Start and End Dates - 4 and 5 days after stim start
             const antagonistStartDate = new Date(stimStartDate);
-            antagonistStartDate.setUTCDate(stimStartDate.getUTCDate() + 3);
-            const antagonistEndDate = new Date(antagonistStartDate);
-            antagonistEndDate.setUTCDate(antagonistStartDate.getUTCDate() + 1);
+            antagonistStartDate.setUTCDate(stimStartDate.getUTCDate() + 4);
+            const antagonistEndDate = new Date(stimStartDate);
+            antagonistEndDate.setUTCDate(stimStartDate.getUTCDate() + 5);
             dates.push({
                 date: antagonistStartDate,
                 event: 'Antagonist Start'
@@ -190,11 +199,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 event: 'Antagonist End Date'
             });
     
-            // Possible Egg Retrieval - 12 days after stim start
+            // Egg Retrieval - 12 to 14 days after stim start
             const eggRetrievalStartDate = new Date(stimStartDate);
             eggRetrievalStartDate.setUTCDate(stimStartDate.getUTCDate() + 12);
-            const eggRetrievalEndDate = new Date(eggRetrievalStartDate);
-            eggRetrievalEndDate.setUTCDate(eggRetrievalStartDate.getUTCDate() + 2);
+            const eggRetrievalEndDate = new Date(stimStartDate);
+            eggRetrievalEndDate.setUTCDate(stimStartDate.getUTCDate() + 14);
             dates.push({
                 date: eggRetrievalStartDate,
                 event: 'Egg Retrieval Start Date'
@@ -202,8 +211,9 @@ document.addEventListener('DOMContentLoaded', function() {
             dates.push({
                 date: eggRetrievalEndDate,
                 event: 'Egg Retrieval End Date'
-            })
+            });
     
+            // Day 11 Ultrasound
             if (day11Ultrasound) {
                 dates.push({
                     date: new Date(day11Ultrasound),

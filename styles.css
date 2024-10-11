@@ -25,15 +25,33 @@ body {
 }
 
 .week {
-    display: flex; /* Use flexbox for each week */
+    display: flex;
+    justify-content: space-around; /* Evenly space the child elements */
 }
 
 .date {
-    flex: 1; /* Each date box takes equal space */
-    min-height: 60px; /* Set a minimum height for the boxes */
-    box-sizing: border-box;
-    cursor: pointer; /* Change cursor to pointer on hover */
-    transition: background-color 0.3s; /* Smooth transition for hover effect */
+    flex: 1; /* Allow all boxes to grow equally */
+    min-width: 100px; /* Set a minimum width for the boxes */
+    border: 1px solid #ccc;
+    padding: 10px;
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    position: relative;
+    display: flex;
+    align-items: center; /* Center the text vertically */
+    justify-content: center; /* Center the text horizontally */
+    height: 100px; /* Set a fixed height */
+}
+
+/* Optional: if you want to ensure boxes are of the same height */
+.date-number {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    font-weight: bold;
+}
+
+.date-events {
+    margin-top: 20px;
 }
 
 .date:hover {
