@@ -42,11 +42,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     const calendarElement = document.getElementById('calendar-weeks');
+    const patientNameDisplay = document.getElementById('patient-name-display');
     const patientName = localStorage.getItem('patientName');
     const stimStartDateValue = localStorage.getItem('stimStartDate');
     const day11UltrasoundValue = localStorage.getItem('day11Ultrasound');
 
     if (patientName) {
+        patientNameDisplay.textContent = `Patient Name: ${patientName}`;
+
         const stimStartDate = stimStartDateValue ? new Date(stimStartDateValue) : null;
         const day11Ultrasound = day11UltrasoundValue ? new Date(day11UltrasoundValue) : null;
 
