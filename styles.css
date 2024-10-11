@@ -59,15 +59,31 @@ body {
 }
 
 @media print {
-    body * {
-        visibility: hidden;
+    /* Hide everything that is not needed for printing */
+    #print-button {
+        display: none; /* Hide the print button */
     }
-    #calendar, #calendar * {
-        visibility: visible;
+
+    /* Ensure that headers are printed */
+    h1, h2, h3 {
+        display: block; /* Ensure headers are visible */
     }
+
+    /* Ensure the calendar is displayed properly */
     #calendar {
-        position: absolute;
-        left: 0;
-        top: 0;
+        margin-top: 0; /* Adjust margins if necessary */
+    }
+
+    /* Optional: Make sure the notes box is included in the printout */
+    #notes {
+        display: block; /* Ensure the notes box is visible */
+        margin-top: 20px; /* Add some margin above the notes */
+    }
+
+    /* Optional: Hide any other elements you don't want in the printout */
+    body {
+        margin: 0;
+        padding: 0;
+        font-size: 12pt; /* Adjust font size for print */
     }
 }
