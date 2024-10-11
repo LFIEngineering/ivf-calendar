@@ -4,15 +4,15 @@ document.addEventListener('DOMContentLoaded', function() {
         date.setUTCDate(date.getUTCDate() + diff);
         return date;
     }
-    
+
     const today = new Date();
     const firstFriday = getFirstDayOfWeek(new Date(today), 5); // First Friday
     const day11AfterFriday = new Date(firstFriday);
     day11AfterFriday.setUTCDate(firstFriday.getUTCDate() + 11); // Add 11 days to get to Monday
-    
+
     const stimStartDateInput = document.getElementById('stim-start-date');
     const day11UltrasoundInput = document.getElementById('day-11-ultrasound');
-    
+
     if (stimStartDateInput && day11UltrasoundInput) {
         stimStartDateInput.value = firstFriday.toISOString().split('T')[0]; // Set to first Friday
         day11UltrasoundInput.value = day11AfterFriday.toISOString().split('T')[0]; // Set to 11 days after first Friday
@@ -39,11 +39,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             window.location.href = `calendar.html`;
         });
-        console.log("ivfForm works");
     }
 
     const calendarElement = document.getElementById('calendar-weeks');
-
     const patientName = localStorage.getItem('patientName');
     const stimStartDateValue = localStorage.getItem('stimStartDate');
     const day11UltrasoundValue = localStorage.getItem('day11Ultrasound');
@@ -62,6 +60,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             eventsMap[eventDateString].push(date.event); // Add event to the corresponding date
         });
+
+        console.log(eventsMap); // Inspect the eventsMap to ensure all events are correctly mapped
 
         // Assuming you have the current month and year you want to display
         const currentDate = new Date(); // You can change this to any month/year
@@ -113,7 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Check if this day has any events
                 if (day) {
-                    const dateString = `${year}-${month + 1}-${day}`; // Create date string YYYY-MM-DD
+                    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; // Create date string YYYY-MM-DD
                     if (eventsMap[dateString]) {
                         dayElement.innerHTML += `<br>${eventsMap[dateString].join(', ')}`; // Display events for that day
                     }
@@ -125,7 +125,6 @@ document.addEventListener('DOMContentLoaded', function() {
             calendarElement.appendChild(weekElement);
         });
     }
-
 
     function calculateDates(stimStart, day11Ultrasound) {
         const dates = [];
@@ -142,23 +141,24 @@ document.addEventListener('DOMContentLoaded', function() {
     
         if (stimStartDate) {
             // Stim Start Date
-            dates.push({ 
-                date: stimStartDate, 
-                event: 'Stim Start' 
+            dates.push({
+                date: stimStartDate,
+                event: 'Stim Start'
             });
     
             // Last Active Birth Control Pill - 5 days before stim start
             const lastActiveBCPDate = new Date(stimStartDate);
             lastActiveBCPDate.setUTCDate(stimStartDate.getUTCDate() - 5);
-            dates.push({ 
-                date: lastActiveBCPDate, 
-                event: 'Last Active Birth Control Pill' 
+            dates.push({
+                date: lastActiveBCPDate,
+                event: 'Last Active Birth Control Pill'
             });
     
             // Anticipated Bleed - 0-2 days after the last active birth control pill
             const anticipatedBleedStartDate = new Date(lastActiveBCPDate);
+            anticipatedBleedStartDate.setUTCDate(lastActiveBCPDate.getUTCDate());
             const anticipatedBleedEndDate = new Date(lastActiveBCPDate);
-            anticipatedBleedEndDate.setUTCDate(lastActiveBCPDate.getUTCDate() + 2);
+            anticipatedBleedEndDate.setUTCDate(lastActiveBCPDate.getUTCDate() + 2); // Corrected
             dates.push({
                 date: anticipatedBleedStartDate,
                 event: 'Anticipated Bleed Start'
@@ -167,50 +167,57 @@ document.addEventListener('DOMContentLoaded', function() {
                 date: anticipatedBleedEndDate,
                 event: 'Anticipated Bleed End'
             });
-    
+
             // Baseline Ultrasound and Labs - 2 days before stim start
             const baselineUltrasoundDate = new Date(stimStartDate);
             baselineUltrasoundDate.setUTCDate(stimStartDate.getUTCDate() - 2);
-            dates.push({ 
-                date: baselineUltrasoundDate, 
-                event: 'Baseline Ultrasound and Labs' 
+            dates.push({
+                date: baselineUltrasoundDate,
+                event: 'Baseline Ultrasound and Labs'
             });
     
-            // Possible Antagonist Start - 10 days after stim start
+            // Possible Antagonist Start - 3 days after stim start
             const antagonistStartDate = new Date(stimStartDate);
-            const antagonistEndDate = new Date(stimStartDate);
             antagonistStartDate.setUTCDate(stimStartDate.getUTCDate() + 3);
+            const antagonistEndDate = new Date(antagonistStartDate);
             antagonistEndDate.setUTCDate(antagonistStartDate.getUTCDate() + 1);
-            dates.push({ 
+            dates.push({
                 date: antagonistStartDate,
-                event: 'Antagonist Start' 
+                event: 'Antagonist Start'
             });
             dates.push({
                 date: antagonistEndDate,
                 event: 'Antagonist End Date'
             });
     
-            // Possible Egg Retrieval - 14 days after stim start
+            // Possible Egg Retrieval - 12 days after stim start
             const eggRetrievalStartDate = new Date(stimStartDate);
-            const eggRetrievalEndDate = new Date(stimStartDate);
             eggRetrievalStartDate.setUTCDate(stimStartDate.getUTCDate() + 12);
+            const eggRetrievalEndDate = new Date(eggRetrievalStartDate);
             eggRetrievalEndDate.setUTCDate(eggRetrievalStartDate.getUTCDate() + 2);
             dates.push({
-                date: eggRetrievalStartDate, 
-                event: 'Egg Retrieval Start Date' 
+                date: eggRetrievalStartDate,
+                event: 'Egg Retrieval Start Date'
             });
             dates.push({
                 date: eggRetrievalEndDate,
                 event: 'Egg Retrieval End Date'
             })
-
+    
             if (day11Ultrasound) {
-                dates.push({ 
-                    date: new Date(day11Ultrasound), 
-                    event: 'Day 11 Ultrasound' 
+                dates.push({
+                    date: new Date(day11Ultrasound),
+                    event: 'Day 11 Ultrasound'
                 });
             }
+        } else {
+            console.warn('No valid start date provided for calculations.');
         }
+    
+        dates.forEach(({ date, event }) => {
+            console.log(`${event}: ${date.toISOString()}`);
+        });
+    
         return dates;
     }
 
