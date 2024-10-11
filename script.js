@@ -37,15 +37,22 @@ document.addEventListener('DOMContentLoaded', function() {
             localStorage.setItem('stimStartDate', stimStartDateValue);
             localStorage.setItem('day11Ultrasound', day11UltrasoundValue);
 
-            window.location.href = `calendar.html`;
+            window.location.href = `calendar.html?patientName=${encodeURIComponent(patientName)}`;
         });
     }
-
-    const calendarElement = document.getElementById('calendar-weeks');
     const patientNameDisplay = document.getElementById('patient-name-display');
     const patientName = localStorage.getItem('patientName');
+    const urlParams = new URLSearchParams(window.location.search);
+    const patientNameFromQuery = urlParams.get('patientName');
+
+    const calendarElement = document.getElementById('calendar-weeks');
     const stimStartDateValue = localStorage.getItem('stimStartDate');
     const day11UltrasoundValue = localStorage.getItem('day11Ultrasound');
+
+    if (patientNameFromQuery) {
+        patientNameDisplay.textContent = `Patient Name: ${decodeURIComponent(patientNameFromQuery)}`;
+        localStorage.setItem('patientName', decodeURIComponent(patientNameFromQuery));
+    }
 
     if (patientName) {
         patientNameDisplay.textContent = `Patient Name: ${patientName}`;
