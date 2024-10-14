@@ -1,64 +1,22 @@
 document.addEventListener('DOMContentLoaded', function() {
-    function getFirstDayOfWeek(date, dayOfWeek) {
-        const diff = (dayOfWeek - date.getUTCDay() + 7) % 7;
-        date.setUTCDate(date.getUTCDate() + diff);
-        return date;
-    }
 
+    // calculates the current month and year of the current date 
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
-    const firstFriday = getFirstDayOfWeek(new Date(today), 5); // First Friday
-    const day11AfterFriday = new Date(firstFriday);
-    day11AfterFriday.setUTCDate(firstFriday.getUTCDate() + 11); // Add 11 days to get to Monday
 
+    // displays the month and year in calendar.html
     const monthYearDisplay = document.getElementById('month-year-display');
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
 
-    const stimStartDateInput = document.getElementById('stim-start-date');
-    const day11UltrasoundInput = document.getElementById('day-11-ultrasound');
-
-    if (stimStartDateInput && day11UltrasoundInput) {
-        stimStartDateInput.value = firstFriday.toISOString().split('T')[0]; // Set to first Friday
-        day11UltrasoundInput.value = day11AfterFriday.toISOString().split('T')[0]; // Set to 11 days after first Friday
-    }
-
-    const ivfForm = document.getElementById('ivf-form');
-
-    if (ivfForm) {
-        ivfForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-
-            const patientName = document.getElementById('patient-name').value;
-            const stimStartDateValue = stimStartDateInput.value;
-            const day11UltrasoundValue = day11UltrasoundInput.value;
-
-            if (!patientName || (!stimStartDateValue && !day11UltrasoundValue)) {
-                alert('Please provide the patient name and either the stim start date or the day 11 ultrasound date.');
-                return;
-            }
-
-            localStorage.setItem('patientName', patientName);
-            localStorage.setItem('stimStartDate', stimStartDateValue);
-            localStorage.setItem('day11Ultrasound', day11UltrasoundValue);
-
-            window.location.href = `calendar.html?patientName=${encodeURIComponent(patientName)}`;
-        });
-    }
+    // retrieve elements 
     const patientNameDisplay = document.getElementById('patient-name-display');
-    const patientName = localStorage.getItem('patientName');
-    const urlParams = new URLSearchParams(window.location.search);
-    const patientNameFromQuery = urlParams.get('patientName');
 
     const calendarElement = document.getElementById('calendar-weeks');
+    const patientName = localStorage.getItem('patientName');
     const stimStartDateValue = localStorage.getItem('stimStartDate');
     const day11UltrasoundValue = localStorage.getItem('day11Ultrasound');
-
-    if (patientNameFromQuery) {
-        patientNameDisplay.textContent = `${decodeURIComponent(patientNameFromQuery)}`;
-        localStorage.setItem('patientName', decodeURIComponent(patientNameFromQuery));
-    }
 
     if (patientName) {
         patientNameDisplay.textContent = `${patientName}`;
@@ -272,12 +230,4 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    const clearDataButton = document.getElementById('clear-data');
-
-    if (clearDataButton) {
-        clearDataButton.addEventListener('click', function() {
-            localStorage.clear();
-            window.location.href = 'index.html';
-        });
-    }
 });
