@@ -4,45 +4,38 @@ body {
 
 #calendar {
     margin-top: 20px;
-}
-
-.calendar-entry {
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    background-color: #f9f9f9;
-}
-
-#calendar {
     border: 1px solid #ccc;
     border-radius: 8px;
     overflow: hidden;
 }
 
+/* Header for weekdays */
 .weekdays {
     font-weight: bold;
     background-color: #f8f9fa; /* Light background for the header */
 }
 
+/* Flexbox layout for weeks */
 .week {
     display: flex;
-    justify-content: space-around; /* Evenly space the child elements */
+    justify-content: space-between; /* Use space-between for equal spacing */
 }
 
 .date {
-    flex: 1; /* Allow all boxes to grow equally */
     min-width: 100px; /* Set a minimum width for the boxes */
+    width: 150px; /* Set a fixed width for the boxes */
+    height: 200px; /* Set a fixed height for uniformity */
     border: 1px solid #ccc;
     padding: 10px;
     box-sizing: border-box; /* Include padding and border in the element's total width and height */
     position: relative;
-    display: flex;
-    align-items: center; /* Center the text vertically */
-    justify-content: center; /* Center the text horizontally */
-    height: 100px; /* Set a fixed height */
+    display: flex; /* Use flexbox for layout */
+    flex-direction: column; /* Stack children vertically */
+    justify-content: center; /* Center the content vertically */
+    align-items: center; /* Center the content horizontally */
 }
 
-/* Optional: if you want to ensure boxes are of the same height */
+/* Date number styling */
 .date-number {
     position: absolute;
     top: 5px;
@@ -50,12 +43,19 @@ body {
     font-weight: bold;
 }
 
+/* Optional: Style for events inside date boxes */
 .date-events {
-    margin-top: 20px;
-}
-
-.date:hover {
-    background-color: #e6e6e6; /* Change background on hover */
+    margin-top: 20px; /* Space for event listing */
+    overflow-wrap: break-word; /* Allows long words to break onto the next line */
+    word-wrap: break-word; /* Legacy support */
+    hyphens: auto; /* Adds hyphenation if needed */
+    width: 100%; /* Ensure it takes full width of the date box */
+    white-space: normal; /* Allow text to wrap onto the next line */
+    max-height: 60px; /* Set a maximum height to ensure uniformity */
+    display: flex; /* Use flexbox for layout */
+    justify-content: center; /* Center horizontally */
+    align-items: flex-start; /* Align text to the start vertically */
+    text-align: center; /* Center text horizontally */
 }
 
 .buton-spacing {
@@ -68,11 +68,7 @@ body {
     height: 100px; /* Set a fixed height */
 }
 
-#notes::placeholder {
-    color: #aaa; /* Set color for the placeholder text */
-    opacity: 1; /* Ensure the placeholder is visible */
-}
-
+/* Print styles */
 @media print {
     /* Hide everything that is not needed for printing */
     #print-button {
@@ -80,7 +76,7 @@ body {
     }
 
     #save-button {
-        display: none;
+        display: none; /* Hide the save button */
     }
 
     /* Ensure that headers are printed */
