@@ -73,7 +73,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // handles the clear button functionality
     const clearDataButton = document.getElementById('clear-data');
-
     if (clearDataButton) {
         clearDataButton.addEventListener('click', function() {
             localStorage.clear();

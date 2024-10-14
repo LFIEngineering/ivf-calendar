@@ -10,46 +10,45 @@ document.addEventListener('DOMContentLoaded', function() {
     const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
     monthYearDisplay.textContent = `${monthNames[month]} ${year}`;
 
-    // retrieve elements 
-    const patientNameDisplay = document.getElementById('patient-name-display');
-
-    const calendarElement = document.getElementById('calendar-weeks');
+    // retrieve variables from local storage 
     const patientName = localStorage.getItem('patientName');
     const stimStartDateValue = localStorage.getItem('stimStartDate');
     const day11UltrasoundValue = localStorage.getItem('day11Ultrasound');
 
-    if (patientName) {
+    if (patientName) {  
+
+        // display the patient name in calendar.html
+        const patientNameDisplay = document.getElementById('patient-name-display');
         patientNameDisplay.textContent = `${patientName}`;
 
+        // checks if the stim start date and/or day 11 ultrasound date was provided -> if so, a date object is created 
         const stimStartDate = stimStartDateValue ? new Date(stimStartDateValue) : null;
-        const day11Ultrasound = day11UltrasoundValue ? new Date(day11UltrasoundValue) : null;
+        const day11UltrasoundDate = day11UltrasoundValue ? new Date(day11UltrasoundValue) : null;
 
-        const dates = calculateDates(stimStartDate, day11Ultrasound);
+        // calculate the rest of the key events based on the stim start date or day 11 ultrasound date
+        const dates = calculateDates(stimStartDate, day11UltrasoundDate);
 
+        // map out the rest of the events 
         const eventsMap = {};
         dates.forEach(date => {
-            const eventDateString = date.date.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+            const eventDateString = date.date.toISOString().split('T')[0]; // format date as YYYY-MM-DD
             if (!eventsMap[eventDateString]) {
-                eventsMap[eventDateString] = []; // Initialize if not present
+                eventsMap[eventDateString] = []; // initialize if not present
             }
-            eventsMap[eventDateString].push(date.event); // Add event to the corresponding date
+            eventsMap[eventDateString].push(date.event); // add event to the event map
         });
 
-        console.log(eventsMap); // Inspect the eventsMap to ensure all events are correctly mapped
+        // ensure that all events are correct 
+        console.log(eventsMap);
 
-        // Assuming you have the current month and year you want to display
-        const currentDate = new Date(); // You can change this to any month/year
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth(); // 0 = January, 1 = February, etc.
-
-        // Get the first day of the month
+        // get the first and last days of the month
         const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0); // Last day of the month
+        const lastDay = new Date(year, month + 1, 0);
 
-        // Create an array to hold the weeks
+        // create an array to hold the weeks
         const weeks = [];
 
-        // Fill in the weeks
+        // fill in the weeks
         let week = [];
         let dayCounter = 1;
 
@@ -58,16 +57,16 @@ document.addEventListener('DOMContentLoaded', function() {
             week.push('');
         }
 
-        // Fill in the days of the month
+        // fill in the days of the month
         for (let i = 1; i <= lastDay.getDate(); i++) {
             week.push(i);
             if (week.length === 7) {
                 weeks.push(week);
-                week = []; // Reset for the next week
+                week = []; // reset for the next week
             }
         }
 
-        // Add empty days for the end of the month
+        // add empty days for the end of the month
         while (week.length < 7) {
             week.push('');
         }
@@ -75,7 +74,10 @@ document.addEventListener('DOMContentLoaded', function() {
             weeks.push(week);
         }
 
-        // Populate the calendar
+        // retrieve empty calendar div to populate
+        const calendarElement = document.getElementById('calendar-weeks');
+
+        // ppulate the calendar div
         weeks.forEach((week) => {
             const weekElement = document.createElement('div');
             weekElement.className = 'week d-flex';
@@ -85,45 +87,51 @@ document.addEventListener('DOMContentLoaded', function() {
                 dayElement.className = 'date flex-fill border p-3';
                 
                 if (day) {
-                    // Create a span for the date number
+                    // create a span for the date number
                     const dateNumberElement = document.createElement('span');
                     dateNumberElement.className = 'date-number';
                     dateNumberElement.textContent = day;
+
+                    // append date number to datebox div
                     dayElement.appendChild(dateNumberElement);
 
-                    // Create a div for the events
+                    // create a div for the events
                     const dateEventsElement = document.createElement('div');
                     dateEventsElement.className = 'date-events';
                     
-                    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; // Create date string YYYY-MM-DD
+                    const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; // create date string YYYY-MM-DD
                     if (eventsMap[dateString]) {
-                        dateEventsElement.innerHTML = eventsMap[dateString].join('<br>'); // Display events for that day
+                        dateEventsElement.innerHTML = eventsMap[dateString].join('<br>'); // display events for that day
                     }
+                    // append event to datebox div
                     dayElement.appendChild(dateEventsElement);
                 }
 
+                // append day element to week div
                 weekElement.appendChild(dayElement);
             });
 
+            // append week element to calendar
             calendarElement.appendChild(weekElement);
         });
     }
 
-    function calculateDates(stimStart, day11Ultrasound) {
+    // function calculates the rest of the key events based on the stim start date or day 11 ultrasound dates 
+    function calculateDates(stimStartDate, day11UltrasoundDate) {
         const dates = [];
-        let stimStartDate;
     
-        if (stimStart) {
-            stimStartDate = new Date(stimStart);
+        // calculate the stim start date based on input
+        if (day11UltrasoundDate && !stimStartDate) {
+            stimStartDate = new Date(day11UltrasoundDate);
             stimStartDate.setUTCHours(0, 0, 0, 0);
-        } else if (day11Ultrasound) {
-            stimStartDate = new Date(day11Ultrasound);
-            stimStartDate.setUTCHours(0, 0, 0, 0);
-            stimStartDate.setUTCDate(stimStartDate.getUTCDate() - 11);
+            stimStartDate.setUTCDate(stimStartDate.getUTCDate() - 10); // calculate stim start date based on day 11 ultrasound date
         }
     
         if (stimStartDate) {
-            // Stim Start Date
+
+            stimStartDate.setUTCHours(0, 0, 0, 0);
+
+            // Stim Start
             dates.push({
                 date: stimStartDate,
                 event: 'Stim Start'
@@ -141,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const anticipatedBleedStartDate = new Date(lastActiveBCPDate);
             anticipatedBleedStartDate.setUTCDate(lastActiveBCPDate.getUTCDate());
             const anticipatedBleedEndDate = new Date(lastActiveBCPDate);
-            anticipatedBleedEndDate.setUTCDate(lastActiveBCPDate.getUTCDate() + 2); // Corrected
+            anticipatedBleedEndDate.setUTCDate(lastActiveBCPDate.getUTCDate() + 2);
             dates.push({
                 date: anticipatedBleedStartDate,
                 event: 'Anticipated Bleed Start'
@@ -159,7 +167,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 event: 'Baseline Ultrasound and Labs'
             });
     
-            // Antagonist Start and End Dates - 4 and 5 days after stim start
+            // Possible Antagonist Start - 4-5 days after stim start
             const antagonistStartDate = new Date(stimStartDate);
             antagonistStartDate.setUTCDate(stimStartDate.getUTCDate() + 4);
             const antagonistEndDate = new Date(stimStartDate);
@@ -173,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 event: 'Antagonist End Date'
             });
     
-            // Egg Retrieval - 12 to 14 days after stim start
+            // Egg Retrieval - 12-14 days after stim start
             const eggRetrievalStartDate = new Date(stimStartDate);
             eggRetrievalStartDate.setUTCDate(stimStartDate.getUTCDate() + 12);
             const eggRetrievalEndDate = new Date(stimStartDate);
@@ -188,9 +196,9 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     
             // Day 11 Ultrasound
-            if (day11Ultrasound) {
+            if (day11UltrasoundDate) {
                 dates.push({
-                    date: new Date(day11Ultrasound),
+                    date: new Date(day11UltrasoundDate),
                     event: 'Day 11 Ultrasound'
                 });
             }
@@ -198,6 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.warn('No valid start date provided for calculations.');
         }
     
+        // log the dates for accuracy 
         dates.forEach(({ date, event }) => {
             console.log(`${event}: ${date.toISOString()}`);
         });
@@ -208,22 +217,21 @@ document.addEventListener('DOMContentLoaded', function() {
     const notesInput = document.getElementById('notes');
     const savedNotes = localStorage.getItem('notes');
     if (savedNotes) {
-        notesInput.value = savedNotes; // Set the textarea value to saved notes
+        notesInput.value = savedNotes; // set the textarea value to saved notes
     }
 
-    // Save notes to localStorage when the Save button is clicked
+    // handles save button functionality
     const saveButton = document.getElementById('save-button');
-    
     if (saveButton) {
         saveButton.addEventListener('click', function() {
             const notesValue = notesInput.value;
-            localStorage.setItem('notes', notesValue); // Save the notes in localStorage
-            alert('Notes saved!'); // Optional: Alert the user
+            localStorage.setItem('notes', notesValue); // save the notes in localStorage
+            alert('Notes saved!'); // alert the user
         });
     }
 
+    // handles print button functionality
     const printButton = document.getElementById('print-button');
-    
     if (printButton) {
         printButton.addEventListener('click', function() {
             window.print();
