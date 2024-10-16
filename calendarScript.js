@@ -1,65 +1,67 @@
 document.addEventListener('DOMContentLoaded', function () {
-
-    // retrieve variables from local storage 
     const patientName = localStorage.getItem('patientName');
     const stimStartDateValue = localStorage.getItem('stimStartDate');
     const day11UltrasoundValue = localStorage.getItem('day11Ultrasound');
 
+    let eventsMap = {};
+    let isEditMode = false; // Track edit mode state
+
     if (patientName) {
-        // Display the patient name in calendar.html
         const patientNameDisplay = document.getElementById('patient-name-display');
         patientNameDisplay.textContent = `${patientName}`;
-    
-        // Check if the stim start date and/or day 11 ultrasound date was provided
+
         const stimStartDate = stimStartDateValue ? new Date(stimStartDateValue + 'Z') : null;
         const day11UltrasoundDate = day11UltrasoundValue ? new Date(day11UltrasoundValue + 'Z') : null;
-    
-        // Calculate the rest of the key events based on the stim start date or day 11 ultrasound date
-        const { dates, lastDate } = calculateDates(stimStartDate, day11UltrasoundDate);
-    
-        // Map out the rest of the events 
-        const eventsMap = {};
-        dates.forEach(date => {
-            const eventDateString = date.date.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
-            if (!eventsMap[eventDateString]) {
-                eventsMap[eventDateString] = []; // Initialize if not present
-            }
-            eventsMap[eventDateString].push(date.event); // Add event to the event map
-        });
-    
-        // Generate the calendar for the full range of dates
-        generateCalendar(dates[0].date, lastDate, eventsMap);
-    }    
 
-    // function calculates the rest of the key events based on the stim start date or day 11 ultrasound dates 
+        const { dates, lastDate } = calculateDates(stimStartDate, day11UltrasoundDate);
+
+        dates.forEach(date => {
+            const eventDateString = date.date.toISOString().split('T')[0];
+            if (!eventsMap[eventDateString]) {
+                eventsMap[eventDateString] = [];
+            }
+            eventsMap[eventDateString].push(date.event);
+        });
+
+        generateCalendar(dates[0].date, lastDate, eventsMap);
+    }
+
+    // Handle the Edit Calendar button click
+    const editSaveBtn = document.getElementById('edit-save-button');
+    editSaveBtn.addEventListener('click', function () {
+        isEditMode = !isEditMode; // Toggle edit mode
+        editSaveBtn.textContent = isEditMode ? 'Save' : 'Edit';
+
+        // Toggle draggable attribute for event items
+        const eventItems = document.querySelectorAll('.event-item');
+        eventItems.forEach(item => {
+            item.setAttribute('draggable', isEditMode);
+        });
+    });
+
     function calculateDates(stimStartDate, day11UltrasoundDate) {
         const dates = [];
-    
-        // calculate the stim start date based on input
         if (day11UltrasoundDate && !stimStartDate) {
             stimStartDate = new Date(day11UltrasoundDate);
             stimStartDate.setUTCHours(0, 0, 0, 0);
-            stimStartDate.setUTCDate(stimStartDate.getUTCDate() - 10); // calculate stim start date based on day 11 ultrasound date
+            stimStartDate.setUTCDate(stimStartDate.getUTCDate() - 10);
         }
-    
+
         if (stimStartDate) {
             stimStartDate.setUTCHours(0, 0, 0, 0);
 
-            // Stim Start
             dates.push({
                 date: stimStartDate,
                 event: 'Stim Start'
             });
-    
-            // Last Active Birth Control Pill - 5 days before stim start
+
             const lastActiveBCPDate = new Date(stimStartDate);
             lastActiveBCPDate.setUTCDate(stimStartDate.getUTCDate() - 5);
             dates.push({
                 date: lastActiveBCPDate,
                 event: 'Last Active Birth Control Pill'
             });
-    
-            // Anticipated Bleed - 0-2 days after the last active birth control pill
+
             const anticipatedBleedStartDate = new Date(lastActiveBCPDate);
             anticipatedBleedStartDate.setUTCDate(lastActiveBCPDate.getUTCDate());
             const anticipatedBleedEndDate = new Date(lastActiveBCPDate);
@@ -72,16 +74,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 date: anticipatedBleedEndDate,
                 event: 'Anticipated Bleed End'
             });
-    
-            // Baseline Ultrasound and Labs - 3 days after the last active birth control pill
+
             const baselineUltrasoundDate = new Date(lastActiveBCPDate);
             baselineUltrasoundDate.setUTCDate(lastActiveBCPDate.getUTCDate() + 3);
             dates.push({
                 date: baselineUltrasoundDate,
                 event: 'Baseline Ultrasound and Labs'
             });
-    
-            // Possible Antagonist Start - 4-5 days after stim start
+
             const antagonistStartDate = new Date(stimStartDate);
             antagonistStartDate.setUTCDate(stimStartDate.getUTCDate() + 4);
             const antagonistEndDate = new Date(stimStartDate);
@@ -94,8 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 date: antagonistEndDate,
                 event: 'Antagonist End Date'
             });
-    
-            // Egg Retrieval - 12-14 days after stim start
+
             const eggRetrievalStartDate = new Date(stimStartDate);
             eggRetrievalStartDate.setUTCDate(stimStartDate.getUTCDate() + 12);
             const eggRetrievalEndDate = new Date(stimStartDate);
@@ -108,20 +107,18 @@ document.addEventListener('DOMContentLoaded', function () {
                 date: eggRetrievalEndDate,
                 event: 'Egg Retrieval End Date'
             });
-    
-            // Day 11 Ultrasound
+
             if (day11UltrasoundDate) {
                 const day11Date = new Date(day11UltrasoundDate);
-                day11Date.setUTCHours(0, 0, 0, 0); // Ensure it's in UTC
+                day11Date.setUTCHours(0, 0, 0, 0);
                 dates.push({
                     date: day11Date,
                     event: 'Day 11 Ultrasound'
                 });
             }
 
-            // Last date calculation
-            dates.sort((a, b) => a.date - b.date); // Sort dates
-            const lastDate = dates[dates.length - 1].date; // Get the last date
+            dates.sort((a, b) => a.date - b.date);
+            const lastDate = dates[dates.length - 1].date;
 
             return { dates, lastDate };
         } else {
@@ -130,50 +127,40 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Function generates the calendar for a date range
+    // Function to create week element
+    function createWeekElement(week, year, month, eventsMap) {
+        const weekElement = document.createElement('div');
+        weekElement.className = 'week d-flex';
+
+        week.forEach(day => {
+            const dayElement = createDateBox(day, year, month, eventsMap);
+            weekElement.appendChild(dayElement);
+        });
+
+        return weekElement;
+    }
+
+    // Function to generate the calendar for a date range
     function generateCalendar(startDate, endDate, eventsMap) {
         const calendarElement = document.getElementById('calendar-weeks');
         calendarElement.innerHTML = ''; // Clear previous content
 
-        console.log('Received Start Date:', startDate); // Log the start date input
-        console.log('Received End Date:', endDate); // Log the end date input
-
-        // Create UTC dates directly from startDate and endDate
-        const startDateObj = new Date(startDate);
-        const endDateObj = new Date(endDate);
-
-        // Create UTC dates using UTC components
-        let currentDate = new Date(Date.UTC(startDateObj.getUTCFullYear(), startDateObj.getUTCMonth(), startDateObj.getUTCDate()));
-        const lastDate = new Date(Date.UTC(endDateObj.getUTCFullYear(), endDateObj.getUTCMonth(), endDateObj.getUTCDate()));
-
-        // Ensure time is set to UTC midnight
-        currentDate.setUTCHours(0, 0, 0, 0);
-        lastDate.setUTCHours(0, 0, 0, 0);
-
-        console.log('Initial Current Date:', currentDate.toISOString()); // Log the initial current date
-        console.log('Initial Last Date:', lastDate.toISOString()); // Log the initial last date
+        let currentDate = new Date(Date.UTC(startDate.getUTCFullYear(), startDate.getUTCMonth(), startDate.getUTCDate()));
+        const lastDate = new Date(Date.UTC(endDate.getUTCFullYear(), endDate.getUTCMonth(), endDate.getUTCDate()));
 
         while (currentDate <= lastDate) {
-            // Log current date in UTC
-            console.log('Current Date:', currentDate.toISOString());
-            console.log('Last Date:', lastDate.toISOString());
+            const currentMonth = currentDate.getUTCMonth();
+            const currentYear = currentDate.getUTCFullYear();
 
-            const currentMonth = currentDate.getUTCMonth(); // Get the current month in UTC
-            const currentYear = currentDate.getUTCFullYear(); // Get the current year in UTC
-
-            // Create a grid for the month
             const monthGrid = document.createElement('div');
             monthGrid.className = 'month-grid';
 
             const monthHeader = document.createElement('h3');
-            const monthNames = [
-                "January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"
-            ];
+            const monthNames = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"];
             monthHeader.textContent = `${monthNames[currentMonth]} ${currentYear}`;
             monthGrid.appendChild(monthHeader);
 
-            // Create a div for the days of the week header
             const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             const weekdaysHeader = document.createElement('div');
             weekdaysHeader.className = 'weekdays d-flex';
@@ -185,103 +172,141 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             monthGrid.appendChild(weekdaysHeader);
 
-            // Get the first and last day of the current month in UTC
             const firstDay = new Date(Date.UTC(currentYear, currentMonth, 1));
             const lastDay = new Date(Date.UTC(currentYear, currentMonth + 1, 0));
 
-            // Fill in the week structure
             let week = [];
-            // Add empty days for the start of the month
             for (let i = 0; i < firstDay.getUTCDay(); i++) {
                 week.push(''); // Fill empty slots until the first day
             }
 
-            // Fill in the days of the month
             for (let day = 1; day <= lastDay.getUTCDate(); day++) {
-                week.push(day); // Add the day to the week
+                week.push(day);
                 if (week.length === 7) {
-                    // Once we have 7 days, create a week element
                     monthGrid.appendChild(createWeekElement(week, currentYear, currentMonth, eventsMap));
-                    week = []; // Reset for the next week
+                    week = [];
                 }
             }
 
-            // Add any remaining days in the week
             while (week.length < 7) {
-                week.push(''); // Fill in the remaining empty slots for the last week
+                week.push(''); // Fill remaining empty slots for the last week
             }
             if (week.length) {
                 monthGrid.appendChild(createWeekElement(week, currentYear, currentMonth, eventsMap));
             }
 
             calendarElement.appendChild(monthGrid);
-
-            // Move to the next month
-            currentDate.setUTCMonth(currentDate.getUTCMonth() + 1); // Increment month
-            currentDate.setUTCDate(1); // Reset date to the first of the month in UTC
-
-            console.log('Updated Current Date:', currentDate.toISOString()); // Log the updated current date
+            currentDate.setUTCMonth(currentDate.getUTCMonth() + 1); // Move to the next month
+            currentDate.setUTCDate(1);
         }
+
+        // Add event listeners for drag and drop to date boxes
+        const dateBoxes = document.querySelectorAll('.date');
+        dateBoxes.forEach(dateBox => {
+            dateBox.addEventListener('dragover', handleDragOver);
+            dateBox.addEventListener('drop', function (e) {
+                handleDrop(e, dateBox);
+            });
+        });
     }
 
-    // function creates a week element
-    function createWeekElement(week, year, month, eventsMap) {
-        const weekElement = document.createElement('div');
-        weekElement.className = 'week d-flex';
+    function createDateBox(date, year, month, eventsMap) {
+        const dateBox = document.createElement('div');
+        dateBox.className = 'date flex-fill border p-3';
+        dateBox.setAttribute('draggable', 'false'); // Not draggable by default
 
-        week.forEach(day => {
-            const dayElement = document.createElement('div');
-            dayElement.className = 'date flex-fill border p-3';
+        if (date) {
+            const dateNumberElement = document.createElement('span');
+            dateNumberElement.className = 'date-number';
+            dateNumberElement.textContent = date;
 
-            if (day) {
-                // create a span for the date number
-                const dateNumberElement = document.createElement('span');
-                dateNumberElement.className = 'date-number';
-                dateNumberElement.textContent = day;
+            dateBox.appendChild(dateNumberElement);
 
-                // append date number to datebox div
-                dayElement.appendChild(dateNumberElement);
+            const eventDiv = document.createElement('div');
+            eventDiv.className = 'event mt-2';
+            const eventDateKey = new Date(Date.UTC(year, month, date)).toISOString().split('T')[0];
 
-                // create a div for the events
-                const dateEventsElement = document.createElement('div');
-                dateEventsElement.className = 'date-events';
+            if (eventsMap[eventDateKey]) {
+                eventsMap[eventDateKey].forEach(event => {
+                    const eventElement = document.createElement('div');
+                    eventElement.textContent = event;
+                    eventElement.className = 'event-item';
+                    eventElement.draggable = false; // Not draggable by default
 
-                const dateString = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; // create date string YYYY-MM-DD
-                if (eventsMap[dateString]) {
-                    dateEventsElement.innerHTML = eventsMap[dateString].join('<br>'); // display events for that day
-                }
-                // append event to datebox div
-                dayElement.appendChild(dateEventsElement);
+                    // Drag events
+                    eventElement.addEventListener('dragstart', function (e) {
+                        e.dataTransfer.setData('text/plain', event);
+                        e.dataTransfer.effectAllowed = 'move';
+                    });
+
+                    eventDiv.appendChild(eventElement);
+                });
             }
 
-            // append day element to week div
-            weekElement.appendChild(dayElement);
-        });
+            dateBox.appendChild(eventDiv);
+            dateBox.setAttribute('data-date', `${year}-${month + 1}-${date}`);
 
-        return weekElement;
+            // Add drag and drop events to the date box
+            dateBox.addEventListener('dragover', handleDragOver);
+            dateBox.addEventListener('drop', function (e) {
+                handleDrop(e, eventDateKey);
+            });
+        }
+
+        return dateBox;
     }
 
-    const notesInput = document.getElementById('notes');
-    const savedNotes = localStorage.getItem('notes');
-    if (savedNotes) {
-        notesInput.value = savedNotes; // set the textarea value to saved notes
+    function handleDragOver(e) {
+        e.preventDefault(); // Prevent default to allow drop
     }
 
-    // handles save button functionality
-    const saveButton = document.getElementById('save-button');
-    if (saveButton) {
-        saveButton.addEventListener('click', function () {
-            const notesValue = notesInput.value;
-            localStorage.setItem('notes', notesValue); // save the notes in localStorage
-            alert('Notes saved!'); // alert the user
-        });
-    }
-
-    // handles print button functionality
-    const printButton = document.getElementById('print-button');
-    if (printButton) {
-        printButton.addEventListener('click', function () {
-            window.print();
-        });
+    function handleDrop(e, dateKey) {
+        e.preventDefault(); // Prevent default behavior
+    
+        const event = e.dataTransfer.getData('text/plain');
+        if (event) {
+            const targetDate = e.currentTarget.getAttribute('data-date');
+            const eventDate = new Date(targetDate);
+    
+            const eventDateKey = eventDate.toISOString().split('T')[0];
+    
+            // Initialize target date if not already present
+            if (!eventsMap[eventDateKey]) {
+                eventsMap[eventDateKey] = [];
+            }
+    
+            // Check if the event already exists in the target date
+            if (!eventsMap[eventDateKey].includes(event)) {
+                // Add event to target date
+                eventsMap[eventDateKey].push(event);
+    
+                // Update the UI
+                const eventElement = document.createElement('div');
+                eventElement.textContent = event;
+                eventElement.className = 'event-item';
+                e.currentTarget.querySelector('.event').appendChild(eventElement);
+            }
+    
+            // Remove the event from the original date
+            const originalDateKey = e.currentTarget.getAttribute('data-date');
+            for (const key in eventsMap) {
+                if (key !== eventDateKey && eventsMap[key].includes(event)) {
+                    eventsMap[key] = eventsMap[key].filter(e => e !== event);
+                    // Update the original event box UI
+                    const originalEventBox = document.querySelector(`.date[data-date='${key}'] .event`);
+                    if (originalEventBox) {
+                        const eventItems = originalEventBox.querySelectorAll('.event-item');
+                        eventItems.forEach(item => {
+                            if (item.textContent === event) {
+                                originalEventBox.removeChild(item);
+                            }
+                        });
+                    }
+                }
+            }
+    
+            // Log the updated eventsMap to the console
+            console.log('Updated Events Map:', eventsMap);
+        }
     }
 });

@@ -74,6 +74,15 @@
     height: 100px; /* Set a fixed height */
 }
 
+.drag-image {
+    border: 1px solid #000;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 5px;
+    border-radius: 4px;
+    pointer-events: none; /* Prevent mouse events on the drag image */
+    z-index: 1000; /* Make sure it appears above other elements */
+}
+
 /* Print styles */
 @media print {
     /* Hide everything that is not needed for printing */
