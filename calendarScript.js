@@ -4,8 +4,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const day11UltrasoundValue = localStorage.getItem('day11Ultrasound');
 
     let eventsMap = {};
-    let originalStartDate, originalEndDate; // Variables to store the original date range
-    let isEditing = false; // Variable to track edit mode
+    let isEditing = false; // Flag to track editing mode
+    let lastDate = null; // Track the last date for calendar generation
+    let startDate = null; // Track the start date for calendar generation
 
     if (patientName) {
         const patientNameDisplay = document.getElementById('patient-name-display');
@@ -14,9 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const stimStartDate = stimStartDateValue ? new Date(stimStartDateValue + 'Z') : null;
         const day11UltrasoundDate = day11UltrasoundValue ? new Date(day11UltrasoundValue + 'Z') : null;
 
-        const { dates, lastDate } = calculateDates(stimStartDate, day11UltrasoundDate);
-        originalStartDate = dates[0].date; // Store the first date as the start date
-        originalEndDate = lastDate; // Store the last date as the end date
+        const { dates } = calculateDates(stimStartDate, day11UltrasoundDate);
 
         dates.forEach(date => {
             const eventDateString = date.date.toISOString().split('T')[0];
@@ -26,7 +25,9 @@ document.addEventListener('DOMContentLoaded', function () {
             eventsMap[eventDateString].push(date.event);
         });
 
-        generateCalendar(originalStartDate, originalEndDate, eventsMap);
+        startDate = dates[0].date; // Set the start date for the calendar
+        lastDate = dates[dates.length - 1].date; // Set the last date for the calendar
+        generateCalendar(startDate, lastDate, eventsMap);
     }
 
     function calculateDates(stimStartDate, day11UltrasoundDate) {
@@ -40,71 +41,40 @@ document.addEventListener('DOMContentLoaded', function () {
         if (stimStartDate) {
             stimStartDate.setUTCHours(0, 0, 0, 0);
 
-            dates.push({
-                date: stimStartDate,
-                event: 'Stim Start'
-            });
-
+            dates.push({ date: stimStartDate, event: 'Stim Start' });
             const lastActiveBCPDate = new Date(stimStartDate);
             lastActiveBCPDate.setUTCDate(stimStartDate.getUTCDate() - 5);
-            dates.push({
-                date: lastActiveBCPDate,
-                event: 'Last Active Birth Control Pill'
-            });
+            dates.push({ date: lastActiveBCPDate, event: 'Last Active Birth Control Pill' });
 
             const anticipatedBleedStartDate = new Date(lastActiveBCPDate);
             anticipatedBleedStartDate.setUTCDate(lastActiveBCPDate.getUTCDate());
             const anticipatedBleedEndDate = new Date(lastActiveBCPDate);
             anticipatedBleedEndDate.setUTCDate(lastActiveBCPDate.getUTCDate() + 2);
-            dates.push({
-                date: anticipatedBleedStartDate,
-                event: 'Anticipated Bleed Start'
-            });
-            dates.push({
-                date: anticipatedBleedEndDate,
-                event: 'Anticipated Bleed End'
-            });
+            dates.push({ date: anticipatedBleedStartDate, event: 'Anticipated Bleed Start' });
+            dates.push({ date: anticipatedBleedEndDate, event: 'Anticipated Bleed End' });
 
             const baselineUltrasoundDate = new Date(lastActiveBCPDate);
             baselineUltrasoundDate.setUTCDate(lastActiveBCPDate.getUTCDate() + 3);
-            dates.push({
-                date: baselineUltrasoundDate,
-                event: 'Baseline Ultrasound and Labs'
-            });
+            dates.push({ date: baselineUltrasoundDate, event: 'Baseline Ultrasound and Labs' });
 
             const antagonistStartDate = new Date(stimStartDate);
             antagonistStartDate.setUTCDate(stimStartDate.getUTCDate() + 4);
             const antagonistEndDate = new Date(stimStartDate);
             antagonistEndDate.setUTCDate(stimStartDate.getUTCDate() + 5);
-            dates.push({
-                date: antagonistStartDate,
-                event: 'Antagonist Start'
-            });
-            dates.push({
-                date: antagonistEndDate,
-                event: 'Antagonist End Date'
-            });
+            dates.push({ date: antagonistStartDate, event: 'Antagonist Start' });
+            dates.push({ date: antagonistEndDate, event: 'Antagonist End Date' });
 
             const eggRetrievalStartDate = new Date(stimStartDate);
             eggRetrievalStartDate.setUTCDate(stimStartDate.getUTCDate() + 12);
             const eggRetrievalEndDate = new Date(stimStartDate);
             eggRetrievalEndDate.setUTCDate(stimStartDate.getUTCDate() + 14);
-            dates.push({
-                date: eggRetrievalStartDate,
-                event: 'Egg Retrieval Start Date'
-            });
-            dates.push({
-                date: eggRetrievalEndDate,
-                event: 'Egg Retrieval End Date'
-            });
+            dates.push({ date: eggRetrievalStartDate, event: 'Egg Retrieval Start Date' });
+            dates.push({ date: eggRetrievalEndDate, event: 'Egg Retrieval End Date' });
 
             if (day11UltrasoundDate) {
                 const day11Date = new Date(day11UltrasoundDate);
                 day11Date.setUTCHours(0, 0, 0, 0);
-                dates.push({
-                    date: day11Date,
-                    event: 'Day 11 Ultrasound'
-                });
+                dates.push({ date: day11Date, event: 'Day 11 Ultrasound' });
             }
 
             dates.sort((a, b) => a.date - b.date);
@@ -203,81 +173,84 @@ document.addEventListener('DOMContentLoaded', function () {
     function createDateBox(date, year, month, eventsMap) {
         const dateBox = document.createElement('div');
         dateBox.className = 'date flex-fill border p-3';
-        dateBox.setAttribute('draggable', 'true');
+        dateBox.setAttribute('draggable', isEditing); // Only allow dragging when editing
+        dateBox.setAttribute('data-date', `${year}-${month + 1}-${date}`); // Store date for drop
 
         if (date) {
             const dateNumberElement = document.createElement('span');
             dateNumberElement.className = 'date-number';
             dateNumberElement.textContent = date;
-
             dateBox.appendChild(dateNumberElement);
-
-            const eventDiv = document.createElement('div');
-            eventDiv.className = 'event mt-2';
-            const eventDateKey = new Date(Date.UTC(year, month, date)).toISOString().split('T')[0];
-
-            if (eventsMap[eventDateKey]) {
-                eventsMap[eventDateKey].forEach(event => {
-                    const eventElement = document.createElement('div');
-                    eventElement.className = 'event-item';
-                    eventElement.textContent = event;
-                    eventElement.draggable = true;
-
-                    eventElement.addEventListener('dragstart', function (e) {
-                        e.dataTransfer.setData('text/plain', event);
-                    });
-
-                    eventDiv.appendChild(eventElement);
-                });
-            }
-
-            dateBox.appendChild(eventDiv);
-            dateBox.setAttribute('data-date', eventDateKey);
         }
 
+        const eventDiv = document.createElement('div');
+        eventDiv.className = 'event-list mt-2';
+
+        const eventDateKey = new Date(Date.UTC(year, month, date)).toISOString().split('T')[0];
+
+        if (eventsMap[eventDateKey]) {
+            eventsMap[eventDateKey].forEach(event => {
+                const eventElement = document.createElement('div');
+                eventElement.textContent = event;
+                eventElement.className = 'event-item border p-1';
+                eventElement.setAttribute('draggable', isEditing); // Only allow dragging when editing
+                eventElement.addEventListener('dragstart', handleDragStart);
+                eventDiv.appendChild(eventElement);
+            });
+        }
+
+        dateBox.appendChild(eventDiv);
         return dateBox;
+    }
+
+    function handleDragStart(e) {
+        if (!isEditing) return; // Prevent dragging if not in edit mode
+        e.dataTransfer.setData('text/plain', e.target.textContent);
+        e.target.classList.add('dragging');
     }
 
     function handleDragOver(e) {
         e.preventDefault();
     }
 
-    function handleDrop(e, eventDateKey) {
-        e.preventDefault(); // Prevent default action (open as link)
+    function handleDrop(e, targetDate) {
+        e.preventDefault();
+        const eventText = e.dataTransfer.getData('text/plain');
 
-        const eventData = e.dataTransfer.getData('text/plain');
-        if (eventData) {
-            // Update events map
-            if (!eventsMap[eventDateKey]) {
-                eventsMap[eventDateKey] = [];
-            }
-            eventsMap[eventDateKey].push(eventData);
+        const sourceDateKey = Object.keys(eventsMap).find(key => eventsMap[key].includes(eventText));
+        if (sourceDateKey) {
+            // Remove from the original date
+            eventsMap[sourceDateKey] = eventsMap[sourceDateKey].filter(event => event !== eventText);
 
-            // Remove the event from the original date if necessary
-            const originalDateKey = Object.keys(eventsMap).find(dateKey => eventsMap[dateKey].includes(eventData));
-            if (originalDateKey) {
-                eventsMap[originalDateKey] = eventsMap[originalDateKey].filter(event => event !== eventData);
-                if (eventsMap[originalDateKey].length === 0) {
-                    delete eventsMap[originalDateKey];
-                }
+            // Add the event to the target date if not already present
+            if (!eventsMap[targetDate]) {
+                eventsMap[targetDate] = [];
             }
 
-            // Use original start and end dates to refresh calendar
-            generateCalendar(originalStartDate, originalEndDate, eventsMap);
-
-            // Console log the updated events map
-            console.log('Updated Events Map:', eventsMap);
+            if (!eventsMap[targetDate].includes(eventText)) {
+                eventsMap[targetDate].push(eventText);
+                console.log("New events map after drop:", eventsMap); // Log the updated events map
+                generateCalendar(startDate, lastDate, eventsMap); // Refresh calendar with the updated events
+            }
         }
     }
 
-    // Save button to exit editing mode
-    const saveButton = document.getElementById('save-button');
-    saveButton.addEventListener('click', function () {
-        isEditing = false; // Set editing mode to false
+    // Function to toggle edit/save mode
+    function toggleEditMode() {
+        isEditing = !isEditing; // Toggle editing state
+        const button = document.getElementById('edit-save-button');
+        button.textContent = isEditing ? 'Save Calendar' : 'Edit Calendar'; // Update button text
+
+        // Enable or disable dragging based on edit mode
         const dateBoxes = document.querySelectorAll('.date');
-        dateBoxes.forEach(box => {
-            box.setAttribute('draggable', 'false'); // Disable dragging
-            box.classList.remove('editable'); // Remove any editable styles
+        dateBoxes.forEach(dateBox => {
+            const eventItems = dateBox.querySelectorAll('.event-item');
+            eventItems.forEach(eventItem => {
+                eventItem.setAttribute('draggable', isEditing);
+            });
         });
-    });
+    }
+
+    const editSaveButton = document.getElementById('edit-save-button');
+    editSaveButton.addEventListener('click', toggleEditMode); // Toggle edit/save state on button click
 });
