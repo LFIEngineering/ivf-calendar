@@ -83,6 +83,14 @@
     z-index: 1000; /* Make sure it appears above other elements */
 }
 
+.date {
+    user-select: none; /* Prevent text selection */
+}
+
+.event-item {
+    cursor: move; /* Indicate draggable items */
+}
+
 /* Print styles */
 @media print {
     /* Hide everything that is not needed for printing */
