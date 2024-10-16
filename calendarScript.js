@@ -249,4 +249,23 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     });
+
+    const notesInput = document.getElementById('notes');
+
+    // handles save button functionality
+    const saveButton = document.getElementById('save-button');
+    if (saveButton) {
+        saveButton.addEventListener('click', function () {
+            const notesValue = notesInput.value;
+            localStorage.setItem('notes', notesValue); // save the notes in localStorage
+            alert('Notes saved!'); // alert the user
+        });
+    }
+
+    const printButton = document.getElementById('print-button');
+    if (printButton) {
+        printButton.addEventListener('click', function () {
+            window.print();
+        });
+    }
 });
