@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let isEditing = false; // Flag to track editing mode
     let startDate = null; // Track the start date for calendar generation
     let lastDate = null; // Track the last date for calendar generation
+    let draggedEvent = null; // Store the dragged event details
 
     if (patientName) {
         const patientNameDisplay = document.getElementById('patient-name-display');
@@ -54,7 +55,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const baselineUltrasoundDate = new Date(lastActiveBCPDate);
             baselineUltrasoundDate.setUTCDate(lastActiveBCPDate.getUTCDate() + 3);
-            dates.push({ date: baselineUltrasoundDate, event: 'Baseline Ultrasound and Labs' });
+            dates.push({ date: baselineUltrasoundDate, event: 'Baseline Ultrasound' });
 
             const antagonistStartDate = new Date(stimStartDate);
             antagonistStartDate.setUTCDate(stimStartDate.getUTCDate() + 4);
@@ -171,101 +172,77 @@ document.addEventListener('DOMContentLoaded', function () {
         const dateBox = document.createElement('div');
         dateBox.className = 'date flex-fill border p-3';
         dateBox.setAttribute('draggable', isEditing); // Only allow dragging when editing
-        dateBox.setAttribute('data-date', `${year}-${month + 1}-${date}`); // Store date for drop handling
+        dateBox.setAttribute('data-date', `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`); // Store date for drop handling
 
-        const dateNumberElement = document.createElement('div');
-        dateNumberElement.className = 'date-number';
-        dateNumberElement.textContent = date;
-        dateBox.appendChild(dateNumberElement);
+        const dateText = document.createElement('div');
+        dateText.className = 'date-text font-weight-bold';
+        dateText.textContent = date;
 
-        const eventDiv = document.createElement('div');
-        eventDiv.className = 'event-list mt-2';
+        dateBox.appendChild(dateText);
 
-        if (eventsMap[`${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`]) {
-            eventsMap[`${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`].forEach(event => {
-                const eventElement = document.createElement('div');
-                eventElement.className = 'event-item';
-                eventElement.textContent = event;
-                eventElement.setAttribute('draggable', isEditing);
-                eventElement.addEventListener('dragstart', handleDragStart);
-                eventDiv.appendChild(eventElement);
+        const eventList = document.createElement('ul');
+        eventList.className = 'event-list';
+        const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(date).padStart(2, '0')}`;
+        if (eventsMap[dateKey]) {
+            eventsMap[dateKey].forEach(event => {
+                const eventItem = document.createElement('li');
+                eventItem.className = 'event-item';
+                eventItem.setAttribute('draggable', isEditing); // Only allow dragging when editing
+                eventItem.textContent = event;
+                eventItem.addEventListener('dragstart', function (e) {
+                    handleDragStart(e, dateKey, event);
+                });
+                eventList.appendChild(eventItem);
             });
         }
+        dateBox.appendChild(eventList);
 
-        dateBox.appendChild(eventDiv);
         return dateBox;
     }
 
-    function handleDragStart(e) {
-        if (!isEditing) return;
-        e.dataTransfer.setData('text/plain', e.target.innerText); // Set the data being dragged
-        e.dataTransfer.setData('date', e.target.closest('.date').getAttribute('data-date')); // Store the date of the box being dragged from
+    function handleDragStart(e, originalDateKey, event) {
+        e.dataTransfer.setData('text/plain', event);
+        draggedEvent = { originalDateKey, event };
     }
 
     function handleDragOver(e) {
-        e.preventDefault(); // Prevent default to allow drop
+        e.preventDefault();
     }
 
-    function handleDrop(e, targetDate) {
+    function handleDrop(e, newDateKey) {
         e.preventDefault();
-        const draggedEvent = e.dataTransfer.getData('text/plain');
-        const sourceDate = e.dataTransfer.getData('date');
+        if (draggedEvent && newDateKey) {
+            const { originalDateKey, event } = draggedEvent;
+            if (originalDateKey !== newDateKey) {
+                // Remove the event from the original date
+                const originalDateEvents = eventsMap[originalDateKey];
+                const eventIndex = originalDateEvents.indexOf(event);
+                if (eventIndex > -1) {
+                    originalDateEvents.splice(eventIndex, 1);
+                }
 
-        const sourceDateObj = new Date(sourceDate);
-        const targetDateObj = new Date(targetDate);
+                // Add the event to the new date
+                if (!eventsMap[newDateKey]) {
+                    eventsMap[newDateKey] = [];
+                }
+                eventsMap[newDateKey].push(event);
 
-        // Check if the target date is within the start and end dates
-        if (targetDateObj < startDate || targetDateObj > lastDate) {
-            console.warn('Drop outside of valid range:', targetDate);
-            return; // Do not allow drop outside of valid range
+                // Re-generate the calendar
+                generateCalendar(startDate, lastDate, eventsMap);
+            }
+            draggedEvent = null;
         }
-
-        if (!eventsMap[targetDate]) {
-            eventsMap[targetDate] = [];
-        }
-
-        // Remove the event from the original date
-        eventsMap[sourceDateObj.toISOString().split('T')[0]] = eventsMap[sourceDateObj.toISOString().split('T')[0]].filter(event => event !== draggedEvent);
-
-        // Add the event to the new date
-        eventsMap[targetDate].push(draggedEvent);
-
-        // Regenerate the calendar to reflect the changes
-        generateCalendar(startDate, lastDate, eventsMap);
     }
 
     const editSaveButton = document.getElementById('edit-save-button');
     editSaveButton.addEventListener('click', function () {
-        isEditing = !isEditing; // Toggle editing mode
-        editSaveButton.textContent = isEditing ? 'Save Calendar' : 'Edit Calendar';
-
-        // Update draggable attributes for all event boxes
-        const dateBoxes = document.querySelectorAll('.date');
-        dateBoxes.forEach(dateBox => {
-            dateBox.setAttribute('draggable', isEditing);
-            const eventItems = dateBox.querySelectorAll('.event-item');
-            eventItems.forEach(eventItem => {
-                eventItem.setAttribute('draggable', isEditing);
-            });
-        });
+        isEditing = !isEditing;
+        editSaveButton.textContent = isEditing ? 'Save' : 'Edit';
+        generateCalendar(startDate, lastDate, eventsMap); // Re-generate calendar to update draggable state
     });
 
-    const notesInput = document.getElementById('notes');
-
-    // handles save button functionality
-    const saveButton = document.getElementById('save-button');
-    if (saveButton) {
-        saveButton.addEventListener('click', function () {
-            const notesValue = notesInput.value;
-            localStorage.setItem('notes', notesValue); // save the notes in localStorage
-            alert('Notes saved!'); // alert the user
-        });
-    }
-
     const printButton = document.getElementById('print-button');
-    if (printButton) {
-        printButton.addEventListener('click', function () {
-            window.print();
-        });
-    }
+    printButton.addEventListener('click', function () {
+        window.print();
+    });
 });

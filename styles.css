@@ -36,8 +36,10 @@
     position: relative; /* For positioning event indicators */
     display: flex; /* Use flexbox for layout */
     flex-direction: column; /* Stack children vertically */
-    justify-content: center; /* Center the content vertically */
+    justify-content: flex-start; /* Align content to the top */
     align-items: center; /* Center the content horizontally */
+    user-select: none; /* Prevent text selection */
+    align-items: flex-start;
 }
 
 /* Date number styling */
@@ -49,7 +51,7 @@
 }
 
 /* Optional: Style for events inside date boxes */
-.date-events {
+.event-list {
     margin-top: 20px; /* Space for event listing */
     overflow-wrap: break-word; /* Allows long words to break onto the next line */
     word-wrap: break-word; /* Legacy support */
@@ -58,13 +60,16 @@
     white-space: normal; /* Allow text to wrap onto the next line */
     max-height: 60px; /* Set a maximum height to ensure uniformity */
     display: flex; /* Use flexbox for layout */
-    justify-content: center; /* Center horizontally */
-    align-items: flex-start; /* Align text to the start vertically */
+    flex-direction: column; /* Stack events vertically */
+    justify-content: flex-start; /* Align items to the start vertically */
+    align-items: center; /* Center text horizontally */
     text-align: center; /* Center text horizontally */
+    list-style-type: none; /* Remove bullet points */
+    padding: 0; /* Remove default padding */
 }
 
 /* Additional styling */
-.buton-spacing {
+.button-spacing {
     margin-top: 5px; /* Space above buttons */
     margin-right: 10px; /* Space to the right of buttons */
 }
@@ -83,10 +88,6 @@
     z-index: 1000; /* Make sure it appears above other elements */
 }
 
-.date {
-    user-select: none; /* Prevent text selection */
-}
-
 .event-item {
     cursor: move; /* Indicate draggable items */
 }
@@ -98,7 +99,7 @@
         display: none; /* Hide the print button */
     }
 
-    #save-button {
+    #edit-save-button {
         display: none; /* Hide the save button */
     }
 
